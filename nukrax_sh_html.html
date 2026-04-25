@@ -221,6 +221,25 @@
     .nav-links a:hover { color: var(--white); }
     .nav-links a:hover::after { width: 100%; }
 
+    /* Back Button */
+    .nav-back {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color .25s;
+      cursor: none;
+    }
+    .nav-back:hover { color: var(--smoke); }
+    .nav-back-arrow { transition: transform .3s var(--ease-out); }
+    .nav-back:hover .nav-back-arrow { transform: translateX(-4px); }
+
     /* CTA Button */
     .btn-primary {
       font-family: var(--font-mono);
@@ -1064,8 +1083,9 @@
       <li><a href="#experience" data-hover>Experience</a></li>
     </ul>
 
-    <a href="#collection" class="btn-primary nav-cta" data-hover>
-      <span>Get Started</span>
+    <a href="index.html" class="nav-back" data-hover>
+      <span class="nav-back-arrow">←</span>
+      Back to Hub
     </a>
 
     <button class="hamburger" id="hamburger" aria-label="Menu">
