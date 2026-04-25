@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NUKRAX — Expert Advisors</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=Outfit:wght@200;300;400;600&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+:root{
+  --black:#060606;--deep:#0c0c0c;--charcoal:#141414;--mid:#1e1e1e;
+  --steel:#2e2e2e;--muted:#5a5a5a;--smoke:#9a9a9a;--offwhite:#e6e6e4;
+  --white:#f4f4f2;--accent:#c0c0bc;
+  --glow:rgba(196,196,192,0.06);--glow-md:rgba(196,196,192,0.12);
+  --font-d:'Bebas Neue',sans-serif;--font-m:'Space Mono',monospace;
+  --font-b:'Outfit',sans-serif;--ease:cubic-bezier(0.16,1,0.3,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--black);color:var(--offwhite);
+  font-family:var(--font-b);font-weight:300;
+  overflow-x:hidden;cursor:none;min-height:100vh;
+}
+::-webkit-scrollbar{width:2px}
+::-webkit-scrollbar-track{background:var(--black)}
+::-webkit-scrollbar-thumb{background:var(--steel);border-radius:2px}
+
+/* Grain */
+body::after{
+  content:'';position:fixed;inset:0;z-index:9998;
+  pointer-events:none;opacity:0.025;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:180px 180px;animation:grain .5s steps(1) infinite;
+}
+@keyframes grain{
+  0%,100%{transform:translate(0,0)}10%{transform:translate(-2%,-3%)}
+  20%{transform:translate(3%,2%)}30%{transform:translate(-1%,4%)}
+  40%{transform:translate(4%,-1%)}50%{transform:translate(-3%,3%)}
+  60%{transform:translate(2%,-4%)}70%{transform:translate(-4%,2%)}
+  80%{transform:translate(3%,1%)}90%{transform:translate(-2%,-2%)}
+}
+
+/* Cursor */
+#cursor-dot{
+  position:fixed;top:0;left:0;width:6px;height:6px;
+  background:var(--white);border-radius:50%;pointer-events:none;
+  z-index:10000;transform:translate(-50%,-50%);mix-blend-mode:difference;
+}
+#cursor-ring{
+  position:fixed;top:0;left:0;width:36px;height:36px;
+  border:1px solid rgba(240,240,236,0.35);border-radius:50%;
+  pointer-events:none;z-index:9999;transform:translate(-50%,-50%);
+  transition:all .18s cubic-bezier(0.16,1,0.3,1);
+}
+body.cursor-hover #cursor-ring{width:52px;height:52px;border-color:rgba(240,240,236,0.55);background:rgba(240,240,236,0.03)}
+
+/* Canvas */
+#canvas-bg{position:fixed;inset:0;z-index:0;pointer-events:none}
+
+/* NAV */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px 52px;
+  background:rgba(6,6,6,0.9);backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(46,46,46,0.5);
+}
+.nav-logo{
+  font-family:var(--font-d);font-size:22px;
+  letter-spacing:0.22em;color:var(--white);
+  text-decoration:none;
+}
+.nav-back{
+  display:flex;align-items:center;gap:8px;
+  font-family:var(--font-m);font-size:10px;font-weight:700;
+  letter-spacing:0.18em;text-transform:uppercase;
+  color:var(--muted);text-decoration:none;
+  transition:color .25s;cursor:none;
+}
+.nav-back:hover{color:var(--smoke)}
+.nav-back-arrow{transition:transform .3s var(--ease)}
+.nav-back:hover .nav-back-arrow{transform:translateX(-4px)}
+
+/* PAGE HEADER */
+.page-header{
+  position:relative;z-index:1;
+  padding:140px 52px 80px;
+  max-width:1400px;margin:0 auto;
+}
+.page-label{
+  font-family:var(--font-m);font-size:9px;letter-spacing:0.3em;
+  text-transform:uppercase;color:var(--muted);
+  margin-bottom:24px;display:flex;align-items:center;gap:16px;
+}
+.page-label::before{content:'';width:24px;height:1px;background:var(--steel)}
+.page-title{
+  font-family:var(--font-d);
+  font-size:clamp(48px,8vw,100px);
+  letter-spacing:0.08em;color:var(--white);line-height:1;
+}
+.page-sub{
+  font-size:13px;color:var(--muted);letter-spacing:0.04em;
+  margin-top:20px;max-width:480px;line-height:1.7;
+}
+
+/* GRID */
+.ea-grid{
+  position:relative;z-index:1;
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(340px,1fr));
+  gap:24px;
+  padding:0 52px 120px;
+  max-width:1400px;margin:0 auto;
+}
+@media(max-width:768px){
+  nav{padding:16px 24px}
+  .page-header{padding:120px 24px 60px}
+  .ea-grid{padding:0 24px 80px;grid-template-columns:1fr}
+}
+
+/* EA CARD */
+.ea-card{
+  position:relative;
+  background:var(--deep);
+  border:1px solid var(--steel);
+  padding:36px;
+  cursor:none;
+  transition:border-color .35s var(--ease),box-shadow .35s var(--ease);
+  transform-style:preserve-3d;
+  will-change:transform;
+  overflow:hidden;
+  opacity:0;transform:translateY(40px);
+  animation:cardReveal .7s var(--ease) forwards;
+}
+.ea-card:nth-child(1){animation-delay:.1s}
+.ea-card:nth-child(2){animation-delay:.2s}
+.ea-card:nth-child(3){animation-delay:.3s}
+.ea-card:nth-child(4){animation-delay:.4s}
+.ea-card:nth-child(5){animation-delay:.5s}
+@keyframes cardReveal{
+  from{opacity:0;transform:translateY(40px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.ea-card::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% 0%,rgba(196,196,192,0.06),transparent 70%);
+  opacity:0;transition:opacity .4s;pointer-events:none;
+}
+.ea-card:hover{
+  border-color:var(--muted);
+  box-shadow:0 0 0 1px rgba(90,90,90,0.2),0 20px 60px rgba(0,0,0,0.5);
+}
+.ea-card:hover::before{opacity:1}
+
+/* Card accent line top */
+.ea-card::after{
+  content:'';
+  position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(196,196,192,0.3),transparent);
+  transform:scaleX(0);transition:transform .4s var(--ease);
+}
+.ea-card:hover::after{transform:scaleX(1)}
+
+.card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px}
+.card-index{
+  font-family:var(--font-m);font-size:9px;letter-spacing:0.2em;
+  color:var(--steel);
+}
+.card-type-badge{
+  font-family:var(--font-m);font-size:8px;letter-spacing:0.18em;
+  text-transform:uppercase;color:var(--muted);
+  border:1px solid var(--steel);padding:4px 10px;
+  transition:border-color .3s,color .3s;
+}
+.ea-card:hover .card-type-badge{border-color:var(--muted);color:var(--smoke)}
+
+.card-name{
+  font-family:var(--font-d);
+  font-size:clamp(24px,3vw,32px);
+  letter-spacing:0.08em;line-height:1.1;
+  color:var(--offwhite);margin-bottom:8px;
+  transition:color .3s;
+}
+.ea-card:hover .card-name{color:var(--white)}
+
+.card-version{
+  font-family:var(--font-m);font-size:9px;letter-spacing:0.2em;
+  color:var(--muted);margin-bottom:20px;
+}
+
+.card-desc{
+  font-size:12px;line-height:1.75;color:var(--muted);
+  margin-bottom:28px;border-left:1px solid var(--steel);
+  padding-left:16px;
+  transition:border-color .3s;
+}
+.ea-card:hover .card-desc{border-color:var(--muted)}
+
+.card-stats{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:12px;margin-bottom:32px;
+}
+.card-stat{
+  padding:12px 14px;
+  background:rgba(14,14,14,0.6);
+  border:1px solid rgba(46,46,46,0.5);
+}
+.card-stat-label{
+  font-family:var(--font-m);font-size:7px;letter-spacing:0.2em;
+  text-transform:uppercase;color:var(--steel);margin-bottom:4px;
+}
+.card-stat-val{
+  font-family:var(--font-m);font-size:13px;font-weight:700;
+  color:var(--smoke);
+}
+
+.card-btn{
+  display:inline-flex;align-items:center;gap:10px;
+  width:100%;padding:14px 20px;
+  font-family:var(--font-m);font-size:10px;font-weight:700;
+  letter-spacing:0.2em;text-transform:uppercase;
+  color:var(--smoke);
+  border:1px solid var(--steel);
+  background:transparent;
+  cursor:none;
+  transition:all .3s var(--ease);
+  position:relative;overflow:hidden;
+}
+.card-btn::before{
+  content:'';position:absolute;inset:0;
+  background:var(--offwhite);
+  transform:translateX(-101%);transition:transform .35s var(--ease);
+}
+.card-btn:hover{color:var(--black);border-color:var(--offwhite)}
+.card-btn:hover::before{transform:translateX(0)}
+.card-btn span{position:relative;z-index:1;display:flex;align-items:center;gap:10px;width:100%;justify-content:space-between}
+.card-btn-arrow{transition:transform .3s var(--ease);position:relative;z-index:1}
+.ea-card:hover .card-btn-arrow{transform:translateX(4px)}
+
+/* MODAL */
+#modal-overlay{
+  position:fixed;inset:0;z-index:1000;
+  background:rgba(0,0,0,0.88);
+  backdrop-filter:blur(12px);
+  opacity:0;pointer-events:none;
+  transition:opacity .4s var(--ease);
+  display:flex;align-items:center;justify-content:center;
+  padding:20px;
+}
+#modal-overlay.active{opacity:1;pointer-events:all}
+#modal-box{
+  position:relative;
+  width:100%;max-width:1100px;
+  max-height:90vh;
+  background:var(--charcoal);
+  border:1px solid var(--steel);
+  overflow:hidden;
+  transform:scale(0.94) translateY(20px);
+  transition:transform .5s var(--ease);
+}
+#modal-overlay.active #modal-box{transform:scale(1) translateY(0)}
+#modal-close{
+  position:absolute;top:20px;right:20px;z-index:10;
+  width:40px;height:40px;
+  border:1px solid var(--steel);
+  background:var(--deep);
+  color:var(--muted);
+  font-size:18px;cursor:none;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .25s;
+}
+#modal-close:hover{border-color:var(--muted);color:var(--offwhite);background:var(--charcoal)}
+#modal-iframe{
+  width:100%;height:85vh;border:none;
+  display:block;
+}
+
+/* Page transition */
+#page-curtain{
+  position:fixed;inset:0;background:var(--black);z-index:9997;
+  pointer-events:none;opacity:0;transition:opacity .5s var(--ease);
+}
+#page-curtain.active{opacity:1;pointer-events:all}
+</style>
+</head>
+<body>
+<div id="page-curtain"></div>
+<div id="cursor-dot"></div>
+<div id="cursor-ring"></div>
+<canvas id="canvas-bg"></canvas>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">NUKRAX</a>
+  <a href="index.html" class="nav-back">
+    <span class="nav-back-arrow">←</span>
+    Back to Hub
+  </a>
+</nav>
+
+<!-- PAGE HEADER -->
+<div class="page-header">
+  <div class="page-label">02 — Strategy Suite</div>
+  <h1 class="page-title">Expert<br/>Advisors</h1>
+  <p class="page-sub">Five institutional-grade automated strategies. Each engineered for a specific market condition, instrument, and execution style.</p>
+</div>
+
+<!-- EA GRID -->
+<div class="ea-grid" id="ea-grid"></div>
+
+<!-- MODAL -->
+<div id="modal-overlay">
+  <div id="modal-box">
+    <button id="modal-close">✕</button>
+    <iframe id="modal-iframe" src="" title="EA Detail"></iframe>
+  </div>
+</div>
+
+<script>
+const EA_DATA=[
+  {
+    id:'apex',
+    name:'APEX HFT ELITE',
+    version:'v1.0',
+    type:'HFT · Scalping',
+    desc:'Ultra-fast execution engine combining adaptive scalping logic with precision entry timing. Designed for high-velocity market environments where milliseconds define edge.',
+    stats:{Instrument:'XAUUSD / FX',Style:'HFT Scalp',TF:'M1 / M5',Mode:'Auto'},
+    file:'APEX_HFT_ELITE_ea_html.html'
+  },
+  {
+    id:'aurum',
+    name:'AURUM HFT ELITE',
+    version:'v1.0',
+    type:'HFT · Gold',
+    desc:'Gold-specialist high-frequency system with institutional liquidity-targeting. Built around XAUUSD market microstructure with dynamic spread filtering.',
+    stats:{Instrument:'XAUUSD',Style:'HFT Gold',TF:'M1 / M5',Mode:'Auto'},
+    file:'AURUM_HFT_ELITE_ea_html.html'
+  },
+  {
+    id:'ilps',
+    name:'ILPS SYSTEM',
+    version:'v1.0',
+    type:'Institutional · XAUUSD',
+    desc:'Institutional Liquidity Precision System — maps order flow imbalances and liquidity pools to execute with surgical precision at institutional price levels.',
+    stats:{Instrument:'XAUUSD',Style:'Institutional',TF:'M5 / M15',Mode:'Auto'},
+    file:'Institutional_Liquidity_Precision_System_ea_html.html'
+  },
+  {
+    id:'smc-hft',
+    name:'SMC ICT ELITE HFT',
+    version:'v2.0',
+    type:'SMC · ICT · HFT',
+    desc:'Second-generation SMC/ICT hybrid with high-frequency execution layer. Combines Smart Money Concepts with ICT methodology and real-time HFT speed.',
+    stats:{Instrument:'XAUUSD / FX',Style:'SMC HFT',TF:'M1 / M5',Mode:'Auto'},
+    file:'SMC_ICT_Elite_HFT_ea_html.html'
+  },
+  {
+    id:'smc',
+    name:'SMC ICT ELITE',
+    version:'v1.0',
+    type:'SMC · ICT',
+    desc:'Pure Smart Money Concepts implementation with full ICT methodology integration. Order blocks, FVGs, liquidity sweeps — all executed with algorithmic precision.',
+    stats:{Instrument:'XAUUSD / FX',Style:'SMC / ICT',TF:'H1 / M15',Mode:'Auto'},
+    file:'SMC_ICT_Elite_ea_html.html'
+  }
+];
+
+/* Build cards */
+const grid=document.getElementById('ea-grid');
+EA_DATA.forEach((ea,i)=>{
+  const card=document.createElement('div');
+  card.className='ea-card';
+  card.innerHTML=`
+    <div class="card-header">
+      <div class="card-index">0${i+1} / 0${EA_DATA.length}</div>
+      <div class="card-type-badge">${ea.type}</div>
+    </div>
+    <div class="card-name">${ea.name}</div>
+    <div class="card-version">${ea.version}</div>
+    <div class="card-desc">${ea.desc}</div>
+    <div class="card-stats">
+      ${Object.entries(ea.stats).map(([k,v])=>`
+        <div class="card-stat">
+          <div class="card-stat-label">${k}</div>
+          <div class="card-stat-val">${v}</div>
+        </div>
+      `).join('')}
+    </div>
+    <button class="card-btn" data-file="${ea.file}">
+      <span>
+        <span>View Strategy</span>
+        <span class="card-btn-arrow">→</span>
+      </span>
+    </button>
+  `;
+  grid.appendChild(card);
+});
+
+/* 3D card tilt */
+document.querySelectorAll('.ea-card').forEach(card=>{
+  card.addEventListener('mousemove',e=>{
+    const r=card.getBoundingClientRect();
+    const x=(e.clientX-r.left)/r.width-0.5;
+    const y=(e.clientY-r.top)/r.height-0.5;
+    card.style.transform=`perspective(800px) rotateY(${x*10}deg) rotateX(${-y*8}deg) translateZ(4px)`;
+  });
+  card.addEventListener('mouseleave',()=>{
+    card.style.transform='perspective(800px) rotateY(0) rotateX(0) translateZ(0)';
+  });
+});
+
+/* Modal */
+const overlay=document.getElementById('modal-overlay');
+const iframe=document.getElementById('modal-iframe');
+const closeBtn=document.getElementById('modal-close');
+
+document.querySelectorAll('.card-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const file='ea-files/'+btn.dataset.file;
+    iframe.src=file;
+    overlay.classList.add('active');
+    document.body.style.overflow='hidden';
+  });
+});
+function closeModal(){
+  overlay.classList.remove('active');
+  document.body.style.overflow='';
+  setTimeout(()=>{iframe.src=''},400);
+}
+closeBtn.addEventListener('click',closeModal);
+overlay.addEventListener('click',e=>{if(e.target===overlay)closeModal()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
+
+/* Cursor */
+const dot=document.getElementById('cursor-dot');
+const ring=document.getElementById('cursor-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{
+  mx=e.clientX;my=e.clientY;
+  dot.style.left=mx+'px';dot.style.top=my+'px';
+});
+function lerp(a,b,t){return a+(b-a)*t}
+(function loop(){
+  rx=lerp(rx,mx,.12);ry=lerp(ry,my,.12);
+  ring.style.left=rx+'px';ring.style.top=ry+'px';
+  requestAnimationFrame(loop);
+})();
+document.querySelectorAll('.ea-card,.card-btn,a,button').forEach(el=>{
+  el.addEventListener('mouseenter',()=>document.body.classList.add('cursor-hover'));
+  el.addEventListener('mouseleave',()=>document.body.classList.remove('cursor-hover'));
+});
+
+/* Page transition */
+const curtain=document.getElementById('page-curtain');
+document.querySelectorAll('a[href]:not([href^="#"])').forEach(a=>{
+  a.addEventListener('click',function(e){
+    const href=this.getAttribute('href');
+    if(!href||href.startsWith('http')) return;
+    e.preventDefault();
+    curtain.classList.add('active');
+    setTimeout(()=>{window.location.href=href},500);
+  });
+});
+
+/* Three.js bg */
+(function(){
+  const canvas=document.getElementById('canvas-bg');
+  const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  renderer.setSize(window.innerWidth,window.innerHeight);
+  const scene=new THREE.Scene();
+  const camera=new THREE.PerspectiveCamera(60,window.innerWidth/window.innerHeight,0.1,1000);
+  camera.position.z=80;
+
+  const count=1200;
+  const pos=new Float32Array(count*3);
+  for(let i=0;i<count;i++){
+    pos[i*3]=(Math.random()-0.5)*260;
+    pos[i*3+1]=(Math.random()-0.5)*260;
+    pos[i*3+2]=(Math.random()-0.5)*200;
+  }
+  const geo=new THREE.BufferGeometry();
+  geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  const mat=new THREE.PointsMaterial({color:0x404040,size:0.4,transparent:true,opacity:0.5});
+  scene.add(new THREE.Points(geo,mat));
+
+  /* Horizontal grid */
+  const gGeo=new THREE.PlaneGeometry(500,500,30,30);
+  const gMat=new THREE.MeshBasicMaterial({color:0x161616,wireframe:true,transparent:true,opacity:0.12});
+  const gMesh=new THREE.Mesh(gGeo,gMat);
+  gMesh.rotation.x=-Math.PI/2.4;gMesh.position.y=-60;
+  scene.add(gMesh);
+
+  let t=0,mX=0,mY=0;
+  document.addEventListener('mousemove',e=>{
+    mX=(e.clientX/window.innerWidth-.5)*2;
+    mY=(e.clientY/window.innerHeight-.5)*2;
+  });
+  function animate(){
+    requestAnimationFrame(animate);t+=0.005;
+    camera.position.x+=(mX*6-camera.position.x)*.025;
+    camera.position.y+=(-mY*4-camera.position.y)*.025;
+    camera.lookAt(scene.position);
+    renderer.render(scene,camera);
+  }
+  animate();
+  window.addEventListener('resize',()=>{
+    camera.aspect=window.innerWidth/window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth,window.innerHeight);
+  });
+})();
+</script>
+</body>
+</html>
