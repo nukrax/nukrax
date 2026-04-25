@@ -1,0 +1,1607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SMC ICT ELITE HFT v2 — Strategy Overview</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:          #080808;
+    --surface:     #0f0f0f;
+    --border:      #1e1e1e;
+    --border-mid:  #2a2a2a;
+    --silver:      #c0c0c0;
+    --silver-dim:  #505050;
+    --gold:        #c9a84c;
+    --gold-dim:    #5a4a20;
+    --platinum:    #e8e8e8;
+    --accent:      #888888;
+    --red:         #c0392b;
+    --red-dim:     rgba(192,57,43,0.3);
+    --text:        #d4d4d4;
+    --muted:       #888888;
+    --muted2:      #444444;
+    --card:        #111111;
+    --card2:       #0d0d0d;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Subtle grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
+    background-size: 44px 44px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Ambient glow — gold tint for XAUUSD */
+  body::after {
+    content: '';
+    position: fixed;
+    top: -200px; left: 50%;
+    transform: translateX(-50%);
+    width: 900px; height: 500px;
+    background: radial-gradient(ellipse, rgba(201,168,76,0.06) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 48px;
+    background: rgba(8,8,8,0.92);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-logo {
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.2em;
+    color: var(--gold);
+    text-transform: uppercase;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 32px;
+    list-style: none;
+  }
+
+  .nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    transition: color .2s;
+  }
+
+  .nav-links a:hover { color: var(--silver); }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 120px 24px 80px;
+  }
+
+  .hero-tag {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    color: var(--gold);
+    text-transform: uppercase;
+    border: 1px solid var(--gold-dim);
+    padding: 6px 20px;
+    border-radius: 2px;
+    margin-bottom: 36px;
+    background: rgba(201,168,76,0.05);
+    animation: fadeUp .6s ease both;
+  }
+
+  .hero h1 {
+    font-size: clamp(38px, 6.5vw, 82px);
+    font-weight: 800;
+    line-height: 1.0;
+    letter-spacing: -0.025em;
+    margin-bottom: 28px;
+    animation: fadeUp .7s ease both;
+  }
+
+  .hero h1 .s  { color: var(--silver); }
+  .hero h1 .g  { color: var(--gold); }
+  .hero h1 .pl { color: var(--platinum); }
+
+  .hero-sub {
+    font-size: clamp(14px, 1.8vw, 17px);
+    color: var(--muted);
+    max-width: 600px;
+    line-height: 1.8;
+    margin-bottom: 64px;
+    animation: fadeUp .8s ease both;
+    font-weight: 400;
+  }
+
+  .hero-stats {
+    display: flex;
+    gap: 56px;
+    animation: fadeUp .9s ease both;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 12px;
+  }
+
+  .stat { text-align: center; }
+
+  .stat-val {
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .stat-val.s  { color: var(--silver); }
+  .stat-val.g  { color: var(--gold); }
+  .stat-val.pl { color: var(--platinum); }
+
+  .stat-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted2);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-top: 7px;
+  }
+
+  .scroll-hint {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted2);
+    letter-spacing: 0.2em;
+    animation: bounce 2s infinite;
+  }
+
+  @keyframes bounce {
+    0%,100% { transform: translateX(-50%) translateY(0); }
+    50%      { transform: translateX(-50%) translateY(6px); }
+  }
+
+  /* ── SECTIONS ── */
+  section {
+    position: relative;
+    z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 100px 24px;
+  }
+
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+
+  .section-title {
+    font-size: clamp(26px, 4vw, 42px);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin-bottom: 18px;
+  }
+
+  .section-title .s  { color: var(--silver); }
+  .section-title .g  { color: var(--gold); }
+  .section-title .pl { color: var(--platinum); }
+
+  .section-desc {
+    font-size: 15px;
+    color: var(--muted);
+    line-height: 1.85;
+    max-width: 720px;
+    margin-bottom: 52px;
+    font-weight: 400;
+  }
+
+  hr.divider {
+    position: relative;
+    z-index: 1;
+    border: none;
+    border-top: 1px solid var(--border);
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  /* ── CARDS ── */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 28px;
+    transition: border-color .25s, transform .25s, box-shadow .25s;
+    cursor: default;
+  }
+
+  .card:hover {
+    border-color: var(--silver-dim);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 36px rgba(0,0,0,0.6);
+  }
+
+  .card.gold-card:hover  { border-color: var(--gold-dim); box-shadow: 0 8px 36px rgba(201,168,76,0.07); }
+  .card.plat-card:hover  { border-color: #3a3a3a; box-shadow: 0 8px 36px rgba(232,232,232,0.05); }
+
+  .card-icon { font-size: 24px; margin-bottom: 16px; }
+
+  .card h3 {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    letter-spacing: -0.01em;
+  }
+
+  .card h3.s  { color: var(--silver); }
+  .card h3.g  { color: var(--gold); }
+  .card h3.pl { color: var(--platinum); }
+
+  .card p {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.78;
+    font-weight: 400;
+  }
+
+  /* ── PILLAR BADGES ── */
+  .pillars {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 48px;
+  }
+
+  .pillar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    transition: border-color .2s;
+  }
+
+  .pillar:hover { border-color: var(--silver-dim); }
+
+  .pillar-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--gold);
+    background: rgba(201,168,76,0.1);
+    border-radius: 2px;
+    padding: 2px 8px;
+    letter-spacing: 0.1em;
+    border: 1px solid var(--gold-dim);
+  }
+
+  /* ── FLOW STEPS ── */
+  .flow { display: flex; flex-direction: column; gap: 0; }
+
+  .flow-step {
+    display: grid;
+    grid-template-columns: 64px 1fr;
+    gap: 28px;
+    position: relative;
+    padding-bottom: 40px;
+    cursor: pointer;
+  }
+
+  .flow-step:last-child { padding-bottom: 0; }
+
+  .flow-step::before {
+    content: '';
+    position: absolute;
+    left: 31px; top: 56px;
+    bottom: 0; width: 2px;
+    background: linear-gradient(to bottom, var(--silver-dim), transparent);
+  }
+
+  .flow-step:last-child::before { display: none; }
+
+  .step-num {
+    width: 48px; height: 48px;
+    border: 2px solid var(--silver-dim);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--silver);
+    flex-shrink: 0;
+    background: var(--card);
+    transition: border-color .2s, background .2s;
+    position: relative; z-index: 1;
+  }
+
+  .flow-step:hover .step-num {
+    border-color: var(--silver);
+    background: rgba(192,192,192,0.07);
+  }
+
+  .step-num.gold-num {
+    border-color: var(--gold-dim);
+    color: var(--gold);
+  }
+
+  .flow-step:hover .step-num.gold-num {
+    border-color: var(--gold);
+    background: rgba(201,168,76,0.08);
+  }
+
+  .step-body { padding-top: 10px; }
+
+  .step-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    letter-spacing: -0.01em;
+  }
+
+  .step-summary {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.7;
+    font-weight: 400;
+  }
+
+  .step-detail {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height .4s ease;
+  }
+
+  .step-detail.open { max-height: 700px; }
+
+  .step-detail-inner {
+    margin-top: 14px;
+    padding: 20px;
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.85;
+    font-weight: 400;
+  }
+
+  .step-detail-inner strong { color: var(--silver); font-weight: 600; }
+  .step-detail-inner .g    { color: var(--gold);   font-weight: 600; }
+  .step-detail-inner .pl   { color: var(--platinum); font-weight: 600; }
+
+  .hint {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted2);
+    letter-spacing: 0.12em;
+    margin-top: 8px;
+  }
+
+  /* ── PAIR GRID ── */
+  .pair-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(195px, 1fr));
+    gap: 12px;
+    margin-bottom: 48px;
+  }
+
+  .pair-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 20px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: border-color .2s;
+  }
+
+  .pair-item:hover { border-color: var(--border-mid); }
+
+  .pair-dot {
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .dot-primary { background: var(--gold);   box-shadow: 0 0 8px var(--gold); }
+  .dot-caution { background: #888888;       box-shadow: 0 0 6px #888888; }
+  .dot-no      { background: var(--red); }
+
+  .pair-name {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .pair-note {
+    font-size: 11px;
+    color: var(--muted2);
+    margin-top: 3px;
+  }
+
+  /* ── RISK GRID ── */
+  .risk-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 14px;
+    margin-bottom: 48px;
+  }
+
+  .risk-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 26px 22px;
+    transition: border-color .2s;
+  }
+
+  .risk-item:hover { border-color: var(--silver-dim); }
+
+  .risk-item-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    color: var(--muted2);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .risk-item-val {
+    font-size: 26px;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 10px;
+  }
+
+  .risk-item-val.s  { color: var(--silver); }
+  .risk-item-val.g  { color: var(--gold); }
+  .risk-item-val.pl { color: var(--platinum); }
+  .risk-item-val.r  { color: var(--red); }
+
+  .risk-item-desc {
+    font-size: 12.5px;
+    color: var(--muted);
+    line-height: 1.7;
+    font-weight: 400;
+  }
+
+  /* ── TIMEFRAME TABLE ── */
+  .tf-table, .params-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 40px;
+  }
+
+  .tf-table th, .params-table th {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    color: var(--muted2);
+    text-transform: uppercase;
+    text-align: left;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .tf-table td {
+    font-size: 13px;
+    color: var(--muted);
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+    line-height: 1.6;
+    vertical-align: top;
+  }
+
+  .tf-table td:first-child {
+    font-family: 'DM Mono', monospace;
+    color: var(--silver);
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .tf-table tr:last-child td { border-bottom: none; }
+  .tf-table tr:hover td { background: rgba(255,255,255,0.018); }
+
+  /* ── PARAMS TABLE ── */
+  .params-table td {
+    font-size: 13px;
+    color: var(--muted);
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    line-height: 1.6;
+    vertical-align: top;
+  }
+
+  .params-table td:first-child {
+    font-family: 'DM Mono', monospace;
+    color: var(--silver);
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .params-table td:nth-child(2) {
+    font-family: 'DM Mono', monospace;
+    color: var(--gold);
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .params-table tr:last-child td { border-bottom: none; }
+  .params-table tr:hover td { background: rgba(255,255,255,0.014); }
+
+  /* ── PHASE TIMELINE ── */
+  .chart-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 30px;
+    margin-bottom: 40px;
+    overflow-x: auto;
+  }
+
+  .chart-box h3 {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    color: var(--muted2);
+    text-transform: uppercase;
+    margin-bottom: 22px;
+  }
+
+  .phase-bar {
+    display: flex;
+    border-radius: 2px;
+    overflow: hidden;
+    height: 46px;
+    margin-bottom: 28px;
+    border: 1px solid var(--border);
+  }
+
+  .phase {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 500;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .phase-time { font-size: 9px; opacity: 0.55; }
+
+  .ph-asian  { background: rgba(30,30,30,0.7);          color: #444444; flex: 2.9; }
+  .ph-london { background: rgba(201,168,76,0.13);        color: var(--gold);   flex: 1;   border-left: 1px solid var(--gold-dim); border-right: 1px solid var(--gold-dim); }
+  .ph-lmid   { background: rgba(192,192,192,0.06);       color: var(--accent); flex: 1.2; }
+  .ph-ny     { background: rgba(200,200,200,0.1);        color: var(--silver); flex: 1.6; border-left: 1px solid var(--silver-dim); border-right: 1px solid var(--silver-dim); }
+  .ph-close  { background: rgba(20,20,20,0.6);           color: #3a3a3a; flex: 3.3; }
+
+  /* ── RULE BOXES ── */
+  .rule-box {
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--silver-dim);
+    border-radius: 0 3px 3px 0;
+    padding: 16px 20px;
+    margin-bottom: 10px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  .rule-box.gold   { border-left-color: var(--gold); }
+  .rule-box.plat   { border-left-color: var(--platinum); }
+  .rule-box.danger { border-left-color: var(--red); }
+
+  .rule-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--silver);
+    background: rgba(192,192,192,0.08);
+    padding: 3px 8px;
+    border-radius: 2px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    letter-spacing: 0.05em;
+  }
+
+  .rule-num.g  { color: var(--gold);     background: rgba(201,168,76,0.1); }
+  .rule-num.pl { color: var(--platinum); background: rgba(232,232,232,0.08); }
+  .rule-num.r  { color: var(--red);      background: rgba(192,57,43,0.1); }
+
+  .rule-text { font-size: 13px; color: var(--muted); line-height: 1.72; font-weight: 400; }
+  .rule-text strong { color: var(--text); font-weight: 600; }
+
+  /* ── BADGES ── */
+  .badge {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    padding: 3px 10px;
+    border-radius: 2px;
+    letter-spacing: 0.1em;
+    font-weight: 500;
+    margin-right: 6px;
+    margin-bottom: 4px;
+  }
+
+  .badge-silver { background: rgba(192,192,192,0.08); color: var(--silver);   border: 1px solid var(--silver-dim); }
+  .badge-gold   { background: rgba(201,168,76,0.1);   color: var(--gold);     border: 1px solid var(--gold-dim); }
+  .badge-plat   { background: rgba(232,232,232,0.07); color: var(--platinum); border: 1px solid #3a3a3a; }
+  .badge-red    { background: rgba(192,57,43,0.1);    color: var(--red);      border: 1px solid rgba(192,57,43,0.3); }
+
+  /* ── CONCEPT DIAGRAM ── */
+  .concept-diagram {
+    position: relative;
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 32px 28px 24px;
+    margin: 40px 0;
+    overflow: hidden;
+  }
+
+  .concept-diagram::before {
+    content: 'ENTRY BLUEPRINT';
+    position: absolute;
+    top: 14px; right: 20px;
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--muted2);
+  }
+
+  .cd-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .cd-arrow {
+    color: var(--gold);
+    font-size: 14px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .cd-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--silver);
+    font-weight: 500;
+    min-width: 180px;
+  }
+
+  .cd-desc {
+    font-size: 12.5px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* ── REVEAL ANIM ── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(22px);
+    transition: opacity .6s ease, transform .6s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 48px 24px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted2);
+    letter-spacing: 0.12em;
+    border-top: 1px solid var(--border);
+  }
+
+  footer span { color: var(--gold); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 680px) {
+    nav { padding: 16px 18px; }
+    .nav-links { display: none; }
+    .hero-stats { gap: 24px; }
+    section { padding: 70px 16px; }
+    .phase-bar { height: auto; flex-direction: column; }
+    .phase { padding: 9px; }
+    .flow-step { grid-template-columns: 48px 1fr; gap: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">SMC · ICT · ELITE · HFT · v2</div>
+  <ul class="nav-links">
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#pairs">Pairs & TF</a></li>
+    <li><a href="#concepts">SMC Concepts</a></li>
+    <li><a href="#entry">Entry Model</a></li>
+    <li><a href="#exit">Exit Logic</a></li>
+    <li><a href="#risk">Risk</a></li>
+    <li><a href="#params">Parameters</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-tag">MetaTrader 5 · Expert Advisor · v2.0.0 · SMC / ICT Engine</div>
+  <h1><span class="pl">SMC / ICT</span><br/><span class="g">Elite</span> <span class="s">HFT</span><br/><span class="pl">Expert Advisor</span></h1>
+  <p class="hero-sub">
+    An institutional-grade Multi-Timeframe Expert Advisor for MT5, engineered exclusively on Smart Money Concepts and ICT methodology. Six timeframes. Full confluence required. Automated precision execution on XAUUSD — active from the moment it's attached to the chart.
+  </p>
+  <div class="hero-stats">
+    <div class="stat">
+      <div class="stat-val g">2–3</div>
+      <div class="stat-label">Max Trades/Day</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val s">2.5:1</div>
+      <div class="stat-label">Risk : Reward</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val pl">6</div>
+      <div class="stat-label">Timeframes</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val g">4/5</div>
+      <div class="stat-label">Min Confluence</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val s">&lt;4%</div>
+      <div class="stat-label">Max Daily DD</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val pl">2</div>
+      <div class="stat-label">Max Daily Losses</div>
+    </div>
+  </div>
+  <div class="scroll-hint">▼ &nbsp; SCROLL TO EXPLORE &nbsp; ▼</div>
+</div>
+
+<hr class="divider"/>
+
+<!-- OVERVIEW -->
+<section id="overview">
+  <div class="reveal">
+    <div class="section-label">00 — Strategy Foundation</div>
+    <h2 class="section-title">What Is <span class="g">SMC ICT Elite</span> <span class="s">HFT v2</span>?</h2>
+    <p class="section-desc">
+      SMC ICT Elite HFT v2 is a fully autonomous Expert Advisor built on pure Smart Money Concepts and ICT (Inner Circle Trader) methodology. It requires a minimum of 4 out of 5 confluence pillars to align across six timeframes before executing any trade. There are zero lagging indicators — every decision derives from live price structure, institutional order flow, and market geometry.
+    </p>
+
+    <div class="pillars">
+      <div class="pillar"><span class="pillar-num">P1</span> HTF Directional Bias (W1 + D1)</div>
+      <div class="pillar"><span class="pillar-num">P2</span> H4 Market Structure (BOS)</div>
+      <div class="pillar"><span class="pillar-num">P3</span> H1 Entry Confirmation (BOS/CHoCH)</div>
+      <div class="pillar"><span class="pillar-num">P4</span> Liquidity Sweep (M15 Trigger)</div>
+      <div class="pillar"><span class="pillar-num">P5</span> Displacement Impulse (Body Multiplier)</div>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-icon">🏛️</div>
+        <h3 class="s">Institutional Logic Only</h3>
+        <p>Built entirely on how institutional traders engineer markets. Every entry requires a liquidity sweep, displacement, order block mitigation, and structural confirmation — the exact sequence used by smart money to trap retail positions before reversing.</p>
+      </div>
+      <div class="card gold-card">
+        <div class="card-icon">⚡</div>
+        <h3 class="g">6-Timeframe Confluence Engine</h3>
+        <p>Simultaneously reads W1, D1, H4, H1, M15, and M5. Macro bias flows from Weekly → Daily → H4 → H1, while the trigger fires on M15 with M5 micro-precision. All timeframe data is pulled automatically — attach once, run forever.</p>
+      </div>
+      <div class="card plat-card">
+        <div class="card-icon">🛡️</div>
+        <h3 class="pl">Institutional Risk Architecture</h3>
+        <p>Capital-driven lot sizing, daily/weekly drawdown halts, max daily loss trades, max weekly loss trades, live equity monitoring, and a session-based killzone filter all work in layers to protect the account in any adverse condition.</p>
+      </div>
+      <div class="card gold-card">
+        <div class="card-icon">🎯</div>
+        <h3 class="g">Partial TP + Trailing Exit</h3>
+        <p>Closes 50% of the position at 1R, moves SL to breakeven, then trails the remaining 50% using live M15 swing structure. Captures early profit while giving the full trade room to run to the final 2.5R target.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider"/>
+
+<!-- PAIRS & TIMEFRAMES -->
+<section id="pairs">
+  <div class="reveal">
+    <div class="section-label">01 — Instrument & Timeframe</div>
+    <h2 class="section-title">Best <span class="g">Pair</span> & <span class="s">Timeframe</span></h2>
+    <p class="section-desc">
+      This EA was designed, tuned, and calibrated specifically for XAUUSD (Gold/USD). The killzone windows, spread thresholds, OB lookback distances, pip values, SL buffers, and ATR behaviour are all optimised for Gold's unique intraday volatility profile. It will adapt to other instruments but performs at its absolute peak on XAUUSD.
+    </p>
+
+    <div class="chart-box">
+      <h3>ICT Killzone Windows — GMT Time</h3>
+      <div class="phase-bar">
+        <div class="phase ph-asian">
+          <span>Asian Range</span>
+          <span class="phase-time">00:00 – 07:00 GMT</span>
+        </div>
+        <div class="phase ph-london">
+          <span>🎯 London KZ</span>
+          <span class="phase-time">07:00 – 10:00</span>
+        </div>
+        <div class="phase ph-lmid">
+          <span>London Mid</span>
+          <span class="phase-time">10:00 – 12:00</span>
+        </div>
+        <div class="phase ph-ny">
+          <span>🎯 New York KZ</span>
+          <span class="phase-time">12:00 – 15:00</span>
+        </div>
+        <div class="phase ph-close">
+          <span>NY Close</span>
+          <span class="phase-time">15:00 – 00:00 GMT</span>
+        </div>
+      </div>
+      <p style="font-size:11px; color:var(--muted2); font-family:'DM Mono',monospace; letter-spacing:0.07em;">
+        🎯 = EA active entry windows &nbsp;|&nbsp; Asia / London Mid / NY Close = monitoring only, no new entries permitted
+      </p>
+    </div>
+
+    <!-- Timeframe Table -->
+    <table class="tf-table">
+      <thead>
+        <tr>
+          <th>Timeframe</th>
+          <th>Role in Strategy</th>
+          <th>What the EA Reads</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>W1 — Weekly</td>
+          <td>Macro Directional Bias</td>
+          <td>Weekly close vs prior week high/low. Determines whether the macro context is bullish or bearish. The foundational layer — all other signals must align with it.</td>
+        </tr>
+        <tr>
+          <td>D1 — Daily</td>
+          <td>Structure & Premium/Discount</td>
+          <td>Daily structure breaks and the equilibrium midpoint of the daily range. Identifies whether price is in Premium (sell zone) or Discount (buy zone) — filters out low-probability entries.</td>
+        </tr>
+        <tr>
+          <td>H4 — 4 Hour</td>
+          <td>Point of Interest (POI)</td>
+          <td>H4 Break of Structure confirmation. Must agree with D1 bias. The intermediate layer that confirms the mid-term directional flow and eliminates counter-trend setups.</td>
+        </tr>
+        <tr>
+          <td>H1 — 1 Hour</td>
+          <td>Entry Confirmation</td>
+          <td>H1 BOS or CHoCH for entry-level structural confirmation. This is the final structural filter — price must show a clean break at this timeframe before the trigger is allowed to fire.</td>
+        </tr>
+        <tr>
+          <td>M15 — 15 Minute</td>
+          <td>Trigger Timeframe</td>
+          <td>Primary trigger bar. Liquidity sweep detection, Order Block identification, FVG (Fair Value Gap) detection, and displacement confirmation all execute at M15 bar close.</td>
+        </tr>
+        <tr>
+          <td>M5 — 5 Minute <span style="color:var(--gold)">← ATTACH EA HERE</span></td>
+          <td>Micro Precision Layer</td>
+          <td>Chart attachment timeframe. Provides tick-level entry precision. Trailing SL also uses M5 swing highs/lows for granular position management. All higher TF data is pulled automatically via iHigh/iLow/iClose calls.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Pair Compatibility -->
+    <h3 style="font-size:16px; font-weight:700; margin-bottom:18px; letter-spacing:-0.01em;">Instrument Compatibility</h3>
+    <div class="pair-grid">
+      <div class="pair-item">
+        <div class="pair-dot dot-primary"></div>
+        <div>
+          <div class="pair-name">XAUUSD</div>
+          <div class="pair-note">✅ Primary — fully optimised &amp; calibrated</div>
+        </div>
+      </div>
+      <div class="pair-item">
+        <div class="pair-dot dot-caution"></div>
+        <div>
+          <div class="pair-name">XAGUSD</div>
+          <div class="pair-note">⚠️ Compatible — adjust spread filter</div>
+        </div>
+      </div>
+      <div class="pair-item">
+        <div class="pair-dot dot-caution"></div>
+        <div>
+          <div class="pair-name">US30 / NAS100</div>
+          <div class="pair-note">⚠️ Compatible — reduce lot sizes</div>
+        </div>
+      </div>
+      <div class="pair-item">
+        <div class="pair-dot dot-caution"></div>
+        <div>
+          <div class="pair-name">EURUSD / GBPUSD</div>
+          <div class="pair-note">⚠️ Works — smaller ranges, tune FVG filter</div>
+        </div>
+      </div>
+      <div class="pair-item">
+        <div class="pair-dot dot-caution"></div>
+        <div>
+          <div class="pair-name">BTCUSD / ETHUSD</div>
+          <div class="pair-note">⚠️ Caution — 24/7 market, disable Asia KZ</div>
+        </div>
+      </div>
+      <div class="pair-item">
+        <div class="pair-dot dot-no"></div>
+        <div>
+          <div class="pair-name">Low-Volume Exotics</div>
+          <div class="pair-note">❌ Not recommended — spread too wide</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-icon">📌</div>
+        <h3 class="s">Why M5 Chart?</h3>
+        <p>Attach to the M5 chart — it is the micro-precision layer the EA uses for trailing SL management and entry timing. All H1, H4, D1, and W1 data is automatically loaded by the EA via internal MQL5 series calls. You never need to open additional charts.</p>
+      </div>
+      <div class="card gold-card">
+        <div class="card-icon">🌍</div>
+        <h3 class="g">Why London Killzone?</h3>
+        <p>London Open (07:00–10:00 GMT) is where the Asian session accumulation range is swept almost every day. Institutions engineer stops above Asian highs or below Asian lows, then reverse into the true directional move — the most repeatable pattern in XAUUSD.</p>
+      </div>
+      <div class="card plat-card">
+        <div class="card-icon">🗽</div>
+        <h3 class="pl">Why NY Killzone?</h3>
+        <p>The New York Killzone (12:00–15:00 GMT) carries the highest volume of the trading day. London-NY overlap continuation trades benefit from full institutional participation. The EA's second primary entry window exploits the NY open liquidity grab and directional acceleration.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider"/>
+
+<!-- SMC CONCEPTS -->
+<section id="concepts">
+  <div class="reveal">
+    <div class="section-label">02 — SMC / ICT Concept Stack</div>
+    <h2 class="section-title">Core <span class="g">Concepts</span> <span class="s">Explained</span></h2>
+    <p class="section-desc">
+      Every concept used in this EA is rooted in how institutional participants actually operate. No indicators, oscillators, or lagging signals. The EA reads market structure, identifies institutional footprints, and executes only when the full sequence is confirmed.
+    </p>
+
+    <div class="concept-diagram">
+      <div class="cd-row">
+        <div class="cd-arrow">①</div>
+        <div class="cd-label">W1 / D1 Macro Bias</div>
+        <div class="cd-desc">Weekly and Daily closes establish the macro direction. Price closing above prior week high = bullish bias. Below prior week low = bearish. All lower TF signals must align with this bias.</div>
+      </div>
+      <div class="cd-row">
+        <div class="cd-arrow">②</div>
+        <div class="cd-label">Premium / Discount</div>
+        <div class="cd-desc">The EA calculates the Daily range midpoint (equilibrium). Buys are only taken in Discount (below midpoint). Sells only in Premium (above midpoint). This eliminates entries at the worst possible price locations.</div>
+      </div>
+      <div class="cd-row">
+        <div class="cd-arrow">③</div>
+        <div class="cd-label">Break of Structure (BOS)</div>
+        <div class="cd-desc">A close beyond a prior swing high (bullish BOS) or swing low (bearish BOS) confirms a structural shift. The EA requires BOS agreement from H4 and H1 before allowing any entry in that direction.</div>
+      </div>
+      <div class="cd-row">
+        <div class="cd-arrow">④</div>
+        <div class="cd-label">Liquidity Sweep</div>
+        <div class="cd-desc">A wick beyond a prior M15 high or low that closes back inside. This confirms institutions have consumed retail stop orders — the engineered liquidity raid. This is the most critical trigger in the entry sequence.</div>
+      </div>
+      <div class="cd-row">
+        <div class="cd-arrow">⑤</div>
+        <div class="cd-label">Order Block (OB)</div>
+        <div class="cd-desc">The last opposing candle before a strong impulse move. For buys: the last bearish candle before a bullish displacement. For sells: the last bullish candle before bearish displacement. Entry price must be inside this zone. Mitigated OBs are automatically rejected.</div>
+      </div>
+      <div class="cd-row">
+        <div class="cd-arrow">⑥</div>
+        <div class="cd-label">Fair Value Gap (FVG)</div>
+        <div class="cd-desc">A 3-candle imbalance where the high of candle 3 does not overlap the low of candle 1 (bullish FVG) or vice versa. Represents an area institutions will return to fill. The EA uses FVG as a confluence filter and SL reference point.</div>
+      </div>
+      <div class="cd-row">
+        <div class="cd-arrow">⑦</div>
+        <div class="cd-label">Displacement</div>
+        <div class="cd-desc">A strong momentum candle whose body is at least 1.8× the body of the prior candle. Confirms institutional intent and genuine directional commitment — not just noise. Without displacement, no OB or FVG setup is valid.</div>
+      </div>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-icon">🧲</div>
+        <h3 class="s">Liquidity Engineering</h3>
+        <p>Institutions require large amounts of resting orders (liquidity) to fill their positions. They push price into retail stop clusters — equal highs/lows, prior session highs/lows — to trigger those stops, then reverse. This EA is calibrated to detect exactly that sequence.</p>
+      </div>
+      <div class="card gold-card">
+        <div class="card-icon">📐</div>
+        <h3 class="g">Market Structure First</h3>
+        <p>Structure is the foundation of every trade. The EA never enters against the dominant structural trend. HTF BOS → MTF BOS → LTF trigger. This top-down alignment ensures the EA is always trading with institutional flow, never against it.</p>
+      </div>
+      <div class="card plat-card">
+        <div class="card-icon">⚖️</div>
+        <h3 class="pl">Equilibrium Pricing</h3>
+        <p>The Premium/Discount filter prevents buying at the top of a range or selling at the bottom. Institutions buy in discount and sell in premium — the EA only enters when price is in the correct pricing zone relative to the daily equilibrium point.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider"/>
+
+<!-- ENTRY MODEL -->
+<section id="entry">
+  <div class="reveal">
+    <div class="section-label">03 — Entry Decision Engine</div>
+    <h2 class="section-title">The <span class="s">Entry</span> <span class="g">Model</span></h2>
+    <p class="section-desc">
+      Every trade passes through a sequential multi-stage gate system. Each gate must pass before the next is evaluated. Any failed gate terminates the evaluation immediately — keeping execution fast and preventing false entries. The EA evaluates both bullish and bearish setups on every M15 bar close.
+    </p>
+
+    <div class="flow">
+
+      <div class="flow-step" onclick="toggleStep(this)">
+        <div class="step-num">01</div>
+        <div class="step-body">
+          <div class="step-title">Killzone Window Verification</div>
+          <div class="step-summary">EA checks GMT time. Only London KZ (07:00–10:00) or NY KZ (12:00–15:00) are active windows. All other hours: no entries.</div>
+          <div class="step-detail">
+            <div class="step-detail-inner">
+              The ICT Killzone filter is the first gate. Based on ICT's core teaching that the highest-probability setups in XAUUSD occur during the London Open and New York Open killzones — because this is when institutional desks are actively executing. The EA uses the <strong>InpGMTOffset</strong> setting to compensate for broker server time differences. If you are in a DST period, adjust the offset accordingly. During all other sessions (Asian, London Mid, NY Close), the EA monitors structure but places no orders.
+            </div>
+          </div>
+          <div class="hint">↓ Click to expand</div>
+        </div>
+      </div>
+
+      <div class="flow-step" onclick="toggleStep(this)">
+        <div class="step-num">02</div>
+        <div class="step-body">
+          <div class="step-title">Risk Limit Gate</div>
+          <div class="step-summary">Checks daily loss count, daily trade count, weekly loss count, daily drawdown %, and weekly drawdown % before any further evaluation.</div>
+          <div class="step-detail">
+            <div class="step-detail-inner">
+              If any of the following are true, the entire entry logic is immediately aborted: <strong>Daily losses ≥ 2</strong>, <strong>Daily wins ≥ 3</strong>, <strong>Daily trades ≥ 3</strong>, <strong>Weekly losses ≥ 4</strong>, <strong>Daily equity drawdown ≥ 4%</strong>, or <strong>Weekly equity drawdown ≥ 8%</strong>. When the daily drawdown or weekly drawdown limit is hit, the EA sets a <span class="g">HALTED</span> flag and displays it on the dashboard. The halt is automatically cleared at the start of the next trading day.
+            </div>
+          </div>
+          <div class="hint">↓ Click to expand</div>
+        </div>
+      </div>
+
+      <div class="flow-step" onclick="toggleStep(this)">
+        <div class="step-num">03</div>
+        <div class="step-body">
+          <div class="step-title">Spread Filter</div>
+          <div class="step-summary">Current spread must be ≤ 40 points. During news events or low-liquidity periods, XAUUSD spreads widen significantly — all entries are blocked.</div>
+          <div class="step-detail">
+            <div class="step-detail-inner">
+              High spreads directly erode edge. If the current spread on XAUUSD exceeds <strong>InpMaxSpread</strong> (default 40 points), the entry evaluation is skipped. This is critical during major economic news events (NFP, CPI, FOMC) when spreads can spike to 100+ points. The spread is checked in real-time on every entry attempt — not cached. During normal XAUUSD market hours, spreads are typically 8–20 points.
+            </div>
+          </div>
+          <div class="hint">↓ Click to expand</div>
+        </div>
+      </div>
+
+      <div class="flow-step" onclick="toggleStep(this)">
+        <div class="step-num">04</div>
+        <div class="step-body">
+          <div class="step-title">HTF Macro Bias Evaluation (W1 + D1)</div>
+          <div class="step-summary">Weekly and Daily closes are evaluated against prior structure. Both must agree for a strong bias signal. Mixed signals produce a neutral state — reducing trade count.</div>
+          <div class="step-detail">
+            <div class="step-detail-inner">
+              The Weekly BOS is detected when the latest weekly close exceeds the prior week's high (bullish) or breaks below the prior week's low (bearish). The same logic runs on D1. When <strong>both Weekly and Daily agree</strong>, the EA sets a <span class="g">STRONG BIAS (+1 or -1)</span>. When they disagree, the EA uses the single confirming timeframe but reduces score. This bias must be ≥ 0 for bulls and ≤ 0 for bears — a hard directional gate.
+            </div>
+          </div>
+          <div class="hint">↓ Click to expand</div>
+        </div>
+      </div>
+
+      <div class="flow-step" onclick="toggleStep(this)">
+        <div class="step-num">05</div>
+        <div class="step-body">
+          <div class="step-title">Confluence Score Calculation</div>
+          <div class="step-summary">5-point score system: HTF bias, H4 structure, H1 BOS, Liquidity Sweep, Displacement. Minimum 4/5 required to proceed to entry.</div>
+          <div class="step-detail">
+            <div class="step-detail-inner">
+              Each of the five pillars awards 1 point:
+              <br/><br/>
+              <span class="g">+1</span> — HTF Bias aligned (W1 + D1 in same direction)<br/>
+              <span class="g">+1</span> — H4 Bullish/Bearish Structure (recent close beyond H4 swing)<br/>
+              <span class="g">+1</span> — H1 Break of Structure confirmed<br/>
+              <span class="g">+1</span> — M15 Liquidity Sweep confirmed (wick + reversal close)<br/>
+              <span class="g">+1</span> — M15 Displacement candle (body ≥ 1.8× prior candle body)<br/>
+              <br/>
+              <strong>Score ≥ 4 = entry evaluation continues.</strong> Score ≤ 3 = hard rejection. This eliminates all low-conviction setups and ensures every trade taken has genuine institutional confluence behind it.
+            </div>
+          </div>
+          <div class="hint">↓ Click to expand</div>
+        </div>
+      </div>
+
+      <div class="flow-step" onclick="toggleStep(this)">
+        <div class="step-num gold-num">06</div>
+        <div class="step-body">
+          <div class="step-title">Order Block Location &amp; Mitigation Check</div>
+          <div class="step-summary">Identifies the last valid bearish candle (for buys) or bullish candle (for sells) before the displacement impulse. Current price must be inside the OB zone.</div>
+          <div class="step-detail">
+            <div class="step-detail-inner">
+              The EA scans back <strong>InpOBLookback</strong> bars (default 20) on the M15 chart. A bullish OB is defined as: a bearish candle (close &lt; open) followed by a bullish displacement candle. The OB zone = Low to High of that bearish candle. The EA then checks if any subsequent candle has closed <span class="g">below the OB low</span> — if so, the OB is considered mitigated and is rejected. Only unmitigated OBs are used as entry zones. Current price (ASK for buys, BID for sells) must be within the OB range for the entry to be valid.
+            </div>
+          </div>
+          <div class="hint">↓ Click to expand</div>
+        </div>
+      </div>
+
+      <div class="flow-step" onclick="toggleStep(this)">
+        <div class="step-num gold-num">07</div>
+        <div class="step-body">
+          <div class="step-title">FVG Confirmation &amp; SL Refinement</div>
+          <div class="step-summary">Identifies a 3-candle Fair Value Gap of minimum size. When present, the SL is extended to below the FVG low (buys) or above the FVG high (sells) for additional structural protection.</div>
+          <div class="step-detail">
+            <div class="step-detail-inner">
+              A bullish FVG exists when: <strong>Low[i] &gt; High[i+2]</strong> with a gap ≥ <span class="g">InpFVGMinPips</span> (default 5 points). This represents an area of price inefficiency institutions will return to. When an FVG is detected alongside the OB, it acts as a secondary entry zone and SL anchor. The SL for the trade is set to the minimum of the OB-derived SL and the FVG-derived SL — providing the deepest structural protection available at that price location.
+            </div>
+          </div>
+          <div class="hint">↓ Click to expand</div>
+        </div>
+      </div>
+
+      <div class="flow-step" onclick="toggleStep(this)">
+        <div class="step-num gold-num">08</div>
+        <div class="step-body">
+          <div class="step-title">Premium/Discount Zone Validation</div>
+          <div class="step-summary">Confirms price is in the correct pricing zone. Buys only in Discount (below Daily equilibrium). Sells only in Premium (above Daily equilibrium).</div>
+          <div class="step-detail">
+            <div class="step-detail-inner">
+              The EA calculates: <strong>Equilibrium = (D1 High + D1 Low) / 2</strong>. For buy setups, the current ASK must be below this midpoint (in Discount). For sell setups, the BID must be above it (in Premium). This single filter prevents entries at statistically poor pricing locations — the most common mistake retail traders make. When <strong>InpUsePDArray = false</strong>, this check is bypassed for highly volatile sessions.
+            </div>
+          </div>
+          <div class="hint">↓ Click to expand</div>
+        </div>
+      </div>
+
+      <div class="flow-step" onclick="toggleStep(this)">
+        <div class="step-num">09</div>
+        <div class="step-body">
+          <div class="step-title">SL / TP Calculation &amp; Lot Sizing</div>
+          <div class="step-summary">SL placed below OB low + buffer (buys) or above OB high + buffer (sells). TP at 2.5R from entry. Lot size calculated from capital × risk% ÷ (SL points × pip value).</div>
+          <div class="step-detail">
+            <div class="step-detail-inner">
+              <strong>Stop Loss:</strong> OB boundary ± InpSLBuffer points (default 8). If FVG also detected, SL is extended to the more conservative level.<br/><br/>
+              <strong>Take Profit:</strong> Entry + (SL distance × InpRR). Default RR = 2.5. This gives a minimum theoretical edge of 2.5:1.<br/><br/>
+              <strong>Lot Size:</strong> <span class="g">Risk Amount ÷ (SL Points × Value Per Point)</span>. Risk Amount = Account Capital × InpRiskPercent / 100. All values are normalised to broker lot step and capped at min/max lot. If the resulting lot is 0, the trade is rejected.
+            </div>
+          </div>
+          <div class="hint">↓ Click to expand</div>
+        </div>
+      </div>
+
+      <div class="flow-step" onclick="toggleStep(this)">
+        <div class="step-num">10</div>
+        <div class="step-body">
+          <div class="step-title">Order Execution</div>
+          <div class="step-summary">Market order sent via CTrade.Buy() or CTrade.Sell() with full SL, TP, magic number, and comment. Slippage capped at InpSlippage points. Daily trade counter incremented.</div>
+          <div class="step-detail">
+            <div class="step-detail-inner">
+              The EA uses MT5's <strong>CTrade</strong> library for execution. Fill policy is set to <strong>ORDER_FILLING_FOK</strong> (Fill or Kill) — if the order cannot be filled at the requested price within the slippage tolerance, it is rejected rather than partially filled at an unknown price. Each executed trade increments the daily trade counter and is tagged with the EA's Magic Number (20240419) for isolation across multiple EA instances.
+            </div>
+          </div>
+          <div class="hint">↓ Click to expand</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Entry Badge Summary -->
+    <div style="margin-top: 48px;">
+      <h3 style="font-size:16px; font-weight:700; margin-bottom:16px;">Entry Requires All of the Following:</h3>
+      <span class="badge badge-silver">Killzone Active</span>
+      <span class="badge badge-gold">Risk Limits Clear</span>
+      <span class="badge badge-silver">Spread ≤ 40pts</span>
+      <span class="badge badge-gold">HTF Bias Aligned</span>
+      <span class="badge badge-silver">Score ≥ 4 / 5</span>
+      <span class="badge badge-gold">OB Unmitigated</span>
+      <span class="badge badge-silver">Price Inside OB</span>
+      <span class="badge badge-gold">Premium / Discount Correct</span>
+      <span class="badge badge-plat">Valid Lot Size</span>
+    </div>
+  </div>
+</section>
+
+<hr class="divider"/>
+
+<!-- EXIT LOGIC -->
+<section id="exit">
+  <div class="reveal">
+    <div class="section-label">04 — Trade Management & Exit Logic</div>
+    <h2 class="section-title">Exits &amp; <span class="g">Position</span> <span class="s">Management</span></h2>
+    <p class="section-desc">
+      Every open trade is managed tick-by-tick. The EA runs a two-stage exit model: a partial close at 1R to secure profit, followed by a dynamic trailing stop using live M15 structure to maximise the remaining runner. This mirrors how professional institutional traders manage winning positions.
+    </p>
+
+    <h3 style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.18em;color:var(--muted2);text-transform:uppercase;margin-bottom:16px;">Stage 1 — Partial Take Profit (runs on every tick)</h3>
+
+    <div class="rule-box gold">
+      <div class="rule-num g">E-1</div>
+      <div class="rule-text"><strong>1R Partial Close.</strong> When floating profit ≥ 1× the initial risk amount (1R), the EA closes <strong>50%</strong> of the position at market. This is configurable via InpPartialClosePC.</div>
+    </div>
+    <div class="rule-box gold">
+      <div class="rule-num g">E-2</div>
+      <div class="rule-text"><strong>Breakeven Move.</strong> Immediately after the partial close, the remaining position's SL is moved to <strong>entry price</strong> (breakeven). The trade becomes risk-free. Controlled by InpMoveToBreakeven.</div>
+    </div>
+    <div class="rule-box gold">
+      <div class="rule-num g">E-3</div>
+      <div class="rule-text"><strong>One-Time Flag.</strong> Partial TP and breakeven move are tracked per-ticket via GlobalVariable. They fire exactly once per trade — no duplicate closes or accidental multiple adjustments.</div>
+    </div>
+
+    <h3 style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.18em;color:var(--muted2);text-transform:uppercase;margin-bottom:16px;margin-top:36px;">Stage 2 — Trailing Stop Loss (runs on every tick)</h3>
+
+    <div class="rule-box">
+      <div class="rule-num">E-4</div>
+      <div class="rule-text"><strong>Trail Activation Threshold.</strong> The trailing stop only activates once the trade is <strong>InpTrailStart points</strong> (default 15pts) in profit. Before this threshold, the SL is not moved beyond the breakeven level.</div>
+    </div>
+    <div class="rule-box">
+      <div class="rule-num">E-5</div>
+      <div class="rule-text"><strong>Structure-Based Trail.</strong> For long positions, the trailing SL is set to the lowest low of the last 5 M15 bars minus InpTrailStep points. For short positions, the highest high of last 5 bars plus InpTrailStep. This follows price structure rather than a fixed pip distance.</div>
+    </div>
+    <div class="rule-box">
+      <div class="rule-num">E-6</div>
+      <div class="rule-text"><strong>One-Direction Only.</strong> The trailing SL can only move in the direction of profit — never widen. A new trailing level is only applied when it is more favourable than the current SL by at least InpTrailStep points.</div>
+    </div>
+
+    <h3 style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.18em;color:var(--muted2);text-transform:uppercase;margin-bottom:16px;margin-top:36px;">Final Take Profit — Full Position</h3>
+
+    <div class="rule-box plat">
+      <div class="rule-num pl">E-7</div>
+      <div class="rule-text"><strong>TP Hit.</strong> Remaining 50% of position closes automatically when price reaches the pre-set TP level at <strong>2.5R</strong> from entry. This is set at order placement and requires no manual intervention.</div>
+    </div>
+    <div class="rule-box danger">
+      <div class="rule-num r">E-8</div>
+      <div class="rule-text"><strong>SL Hit.</strong> If price moves against the trade before 1R is reached, the full position closes at the structural SL. After 1R partial + BE, the remaining position can only close at breakeven or better.</div>
+    </div>
+
+  </div>
+</section>
+
+<hr class="divider"/>
+
+<!-- RISK MANAGEMENT -->
+<section id="risk">
+  <div class="reveal">
+    <div class="section-label">05 — Risk Architecture</div>
+    <h2 class="section-title">Institutional <span class="g">Risk</span> <span class="s">Management</span></h2>
+    <p class="section-desc">
+      Risk management is the most critical component of any professional trading system. The EA operates five independent risk layers simultaneously — from per-trade lot sizing to weekly account-level drawdown limits. Each layer functions autonomously and can halt the EA independently.
+    </p>
+
+    <div class="risk-grid">
+      <div class="risk-item">
+        <div class="risk-item-label">Per-Trade Risk</div>
+        <div class="risk-item-val g">1%</div>
+        <div class="risk-item-desc">Default risk per trade. Capital × 1% ÷ (SL × pip value) = lot size. Fully dynamic — automatically recalculates for every trade based on current account balance.</div>
+      </div>
+      <div class="risk-item">
+        <div class="risk-item-label">Max Daily Loss Trades</div>
+        <div class="risk-item-val s">2</div>
+        <div class="risk-item-desc">After 2 losing trades in a day, all new entries are blocked for the remainder of that session. Resets automatically at the start of the next trading day.</div>
+      </div>
+      <div class="risk-item">
+        <div class="risk-item-label">Max Daily Win Trades</div>
+        <div class="risk-item-val pl">3</div>
+        <div class="risk-item-desc">After 3 winning trades in a day, the EA stops entering new positions. Prevents overtrading during high-performance sessions.</div>
+      </div>
+      <div class="risk-item">
+        <div class="risk-item-label">Max Daily Trades</div>
+        <div class="risk-item-val s">3</div>
+        <div class="risk-item-desc">Hard cap on total trades per day (win + loss combined). Aligns with the 2–3 trades per day target — quality over quantity.</div>
+      </div>
+      <div class="risk-item">
+        <div class="risk-item-label">Max Weekly Losses</div>
+        <div class="risk-item-val r">4</div>
+        <div class="risk-item-desc">After 4 losing trades in a calendar week, the EA halts all new entries until Monday. Prevents compounding losses during a bad market week.</div>
+      </div>
+      <div class="risk-item">
+        <div class="risk-item-label">Daily DD Halt</div>
+        <div class="risk-item-val r">4%</div>
+        <div class="risk-item-desc">If equity falls 4% below the day's starting balance, all entry logic is immediately suspended. The EA resumes automatically the following day if the halt was day-specific.</div>
+      </div>
+      <div class="risk-item">
+        <div class="risk-item-label">Weekly DD Halt</div>
+        <div class="risk-item-val r">8%</div>
+        <div class="risk-item-desc">A 8% equity drawdown from the week's starting balance triggers a full weekly trading halt. Prevents catastrophic drawdowns during consecutive losing periods.</div>
+      </div>
+      <div class="risk-item">
+        <div class="risk-item-label">Spread Gate</div>
+        <div class="risk-item-val s">40pts</div>
+        <div class="risk-item-desc">Maximum spread permitted for any new entry. Blocks all entries during news events, weekend gaps, or broker-side liquidity issues that cause temporary spread spikes.</div>
+      </div>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-icon">📊</div>
+        <h3 class="s">Capital-Driven Lot Sizing</h3>
+        <p>Enter your actual account capital in <strong>InpAccountCapital</strong> (or leave at 0 for auto-detection). Every lot size is calculated fresh per trade: <em>Risk$ ÷ (SL distance in points × tick value per point)</em>. As your account grows, position sizes scale automatically.</p>
+      </div>
+      <div class="card gold-card">
+        <div class="card-icon">🔄</div>
+        <h3 class="g">Auto Counter Reset</h3>
+        <p>Daily counters (loss trades, win trades, total trades, daily DD) reset automatically at the start of each new trading day. Weekly counters reset every Monday. The EA tracks these via OnTradeTransaction — no manual reset required.</p>
+      </div>
+      <div class="card plat-card">
+        <div class="card-icon">📡</div>
+        <h3 class="pl">Real-Time Dashboard</h3>
+        <p>The on-chart dashboard shows live balance, equity, daily DD%, HTF bias direction, killzone status, trading halt status, and all daily/weekly trade counters. Everything visible at a glance without opening any external panel.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider"/>
+
+<!-- RULES / CHECKLIST -->
+<section id="rules">
+  <div class="reveal">
+    <div class="section-label">06 — Execution Rules</div>
+    <h2 class="section-title">Full <span class="s">Execution</span> <span class="g">Rulebook</span></h2>
+    <p class="section-desc">
+      The complete sequential logic the EA runs on every M15 bar close, condensed into the exact decision tree used internally. Each condition is a hard gate — a failure at any point terminates the evaluation and waits for the next bar.
+    </p>
+
+    <h3 style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.18em;color:var(--muted2);text-transform:uppercase;margin-bottom:16px;">Pre-Entry Gates (every M15 bar close)</h3>
+
+    <div class="rule-box plat"><div class="rule-num pl">G-1</div><div class="rule-text"><strong>Killzone check.</strong> Current GMT hour must fall in London KZ (07–10) or NY KZ (12–15). FAIL = skip entire bar.</div></div>
+    <div class="rule-box plat"><div class="rule-num pl">G-2</div><div class="rule-text"><strong>Spread check.</strong> Current spread ≤ InpMaxSpread (40 pts default). FAIL = skip entry, re-check next tick.</div></div>
+    <div class="rule-box plat"><div class="rule-num pl">G-3</div><div class="rule-text"><strong>Position count.</strong> Open positions with this EA's magic number = 0. FAIL = no new entries until position closes.</div></div>
+    <div class="rule-box plat"><div class="rule-num pl">G-4</div><div class="rule-text"><strong>Risk limits.</strong> Daily loss &lt; 2, Daily wins &lt; 3, Daily trades &lt; 3, Weekly loss &lt; 4, Daily DD &lt; 4%, Weekly DD &lt; 8%. Any breach = HALT.</div></div>
+
+    <h3 style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.18em;color:var(--muted2);text-transform:uppercase;margin-bottom:16px;margin-top:32px;">Bullish Entry Sequence</h3>
+
+    <div class="rule-box gold"><div class="rule-num g">B-1</div><div class="rule-text"><strong>HTF Bias ≥ 0.</strong> W1 and/or D1 confirms bullish macro context. Price closed above prior period high.</div></div>
+    <div class="rule-box gold"><div class="rule-num g">B-2</div><div class="rule-text"><strong>H4 Bullish Structure.</strong> H4 close above 3-bar prior swing high confirms intermediate bullish structure.</div></div>
+    <div class="rule-box gold"><div class="rule-num g">B-3</div><div class="rule-text"><strong>H1 BOS confirmed.</strong> H1 close beyond the highest high in the InpStructureLookback window confirms entry-level bullish BOS.</div></div>
+    <div class="rule-box gold"><div class="rule-num g">B-4</div><div class="rule-text"><strong>M15 Liquidity Sweep.</strong> Last M15 bar wicked below prior bar low and closed back above it — sell-side liquidity consumed.</div></div>
+    <div class="rule-box gold"><div class="rule-num g">B-5</div><div class="rule-text"><strong>Confluence score ≥ 4.</strong> Sum of above signals. Minimum 4 of 5 pillars required. Score ≤ 3 = hard rejection.</div></div>
+    <div class="rule-box gold"><div class="rule-num g">B-6</div><div class="rule-text"><strong>OB identified.</strong> Last bearish candle before a bullish displacement (body × 1.8 multiplier) found within InpOBLookback bars.</div></div>
+    <div class="rule-box gold"><div class="rule-num g">B-7</div><div class="rule-text"><strong>OB unmitigated.</strong> No subsequent close below OB low since OB formation. Mitigated OBs are auto-rejected.</div></div>
+    <div class="rule-box gold"><div class="rule-num g">B-8</div><div class="rule-text"><strong>Price inside OB.</strong> Current ASK price must be between OB low and OB high. Price outside zone = no entry.</div></div>
+    <div class="rule-box gold"><div class="rule-num g">B-9</div><div class="rule-text"><strong>Discount zone.</strong> ASK below Daily equilibrium (D1 High + D1 Low) / 2. Price in Premium = rejected.</div></div>
+    <div class="rule-box gold"><div class="rule-num g">B-10</div><div class="rule-text"><strong>Execute BUY.</strong> SL = OB Low − SLBuffer. TP = Entry + (SL distance × 2.5). Lot = Capital × Risk% ÷ SL value. Market buy sent.</div></div>
+
+    <h3 style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.18em;color:var(--muted2);text-transform:uppercase;margin-bottom:16px;margin-top:32px;">Bearish Entry Sequence</h3>
+
+    <div class="rule-box"><div class="rule-num">S-1</div><div class="rule-text"><strong>HTF Bias ≤ 0.</strong> W1 and/or D1 confirms bearish macro context. Price closed below prior period low.</div></div>
+    <div class="rule-box"><div class="rule-num">S-2</div><div class="rule-text"><strong>H4 Bearish Structure.</strong> H4 close below 3-bar prior swing low confirms intermediate bearish structure.</div></div>
+    <div class="rule-box"><div class="rule-num">S-3</div><div class="rule-text"><strong>H1 BOS confirmed.</strong> H1 close below the lowest low in the InpStructureLookback window confirms entry-level bearish BOS.</div></div>
+    <div class="rule-box"><div class="rule-num">S-4</div><div class="rule-text"><strong>M15 Liquidity Sweep.</strong> Last M15 bar wicked above prior bar high and closed back below it — buy-side liquidity consumed.</div></div>
+    <div class="rule-box"><div class="rule-num">S-5</div><div class="rule-text"><strong>Confluence score ≥ 4.</strong> Minimum 4 of 5 bearish pillars confirmed. ≤ 3 = rejected.</div></div>
+    <div class="rule-box"><div class="rule-num">S-6</div><div class="rule-text"><strong>OB identified.</strong> Last bullish candle before a bearish displacement found within InpOBLookback bars. OB = that candle's range.</div></div>
+    <div class="rule-box"><div class="rule-num">S-7</div><div class="rule-text"><strong>OB unmitigated.</strong> No subsequent close above OB high since formation. Auto-rejected if mitigated.</div></div>
+    <div class="rule-box"><div class="rule-num">S-8</div><div class="rule-text"><strong>Price inside OB.</strong> Current BID must be between OB low and OB high. Outside zone = no entry.</div></div>
+    <div class="rule-box"><div class="rule-num">S-9</div><div class="rule-text"><strong>Premium zone.</strong> BID above Daily equilibrium. Price in Discount = rejected.</div></div>
+    <div class="rule-box"><div class="rule-num">S-10</div><div class="rule-text"><strong>Execute SELL.</strong> SL = OB High + SLBuffer. TP = Entry − (SL distance × 2.5). Lot calculated. Market sell sent.</div></div>
+
+    <h3 style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.18em;color:var(--muted2);text-transform:uppercase;margin-bottom:16px;margin-top:32px;">Trade Management (every tick while position is open)</h3>
+
+    <div class="rule-box plat"><div class="rule-num pl">M-1</div><div class="rule-text"><strong>Partial TP check.</strong> Floating profit ≥ 1R (initial risk amount). If yes: close 50% at market. Move SL to breakeven. Set GlobalVariable flag to prevent repeat.</div></div>
+    <div class="rule-box plat"><div class="rule-num pl">M-2</div><div class="rule-text"><strong>Trailing SL activation.</strong> Profit ≥ InpTrailStart points. Identify 5-bar swing low (buys) or swing high (sells) on M15. New SL = swing level ± TrailStep.</div></div>
+    <div class="rule-box plat"><div class="rule-num pl">M-3</div><div class="rule-text"><strong>Trail direction lock.</strong> New trail SL only applied if it improves on current SL by ≥ TrailStep points. SL can never widen.</div></div>
+    <div class="rule-box danger"><div class="rule-num r">M-4</div><div class="rule-text"><strong>SL or TP hit.</strong> Broker closes position automatically. OnTradeTransaction fires, updates daily win/loss counter. GlobalVariable for partial TP flag is retained for audit.</div></div>
+  </div>
+</section>
+
+<hr class="divider"/>
+
+<!-- PARAMETERS -->
+<section id="params">
+  <div class="reveal">
+    <div class="section-label">07 — Configuration</div>
+    <h2 class="section-title">Input <span class="g">Parameters</span></h2>
+    <p class="section-desc">
+      All parameters are configurable from the MT5 EA inputs panel at the time of attachment. No code changes required for normal operation. Parameters are grouped by function — expand each group in MT5 to find the relevant settings.
+    </p>
+
+    <table class="params-table">
+      <thead>
+        <tr>
+          <th>Parameter</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td colspan="3" style="color:var(--gold);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.12em;padding:14px 16px 6px;border-bottom:1px solid var(--border);">ACCOUNT & RISK MANAGEMENT</td></tr>
+        <tr><td>InpAccountCapital</td><td>0</td><td>Your account capital in USD. Set to 0 for automatic detection from AccountInfoDouble(ACCOUNT_BALANCE). Useful when running on a sub-account with a specific allocated capital amount.</td></tr>
+        <tr><td>InpRiskMode</td><td>RISK_PERCENT</td><td>RISK_PERCENT = risk % of balance per trade. RISK_FIXED_USD = fixed dollar risk amount per trade. Choose based on your risk management preference.</td></tr>
+        <tr><td>InpRiskPercent</td><td>1.0</td><td>Risk percentage per trade when InpRiskMode = RISK_PERCENT. 1% is the institutional standard. Reduce to 0.5% for prop firm challenges.</td></tr>
+        <tr><td>InpFixedRiskUSD</td><td>50.0</td><td>Fixed dollar amount risked per trade when InpRiskMode = RISK_FIXED_USD. Overrides the percentage-based calculation.</td></tr>
+        <tr><td>InpMaxDailyDrawdown</td><td>4.0</td><td>Maximum daily equity drawdown %. When reached, all new entries are blocked for the remainder of the day. EA auto-resumes the following trading day.</td></tr>
+        <tr><td>InpMaxWeeklyDD</td><td>8.0</td><td>Maximum weekly equity drawdown %. Triggers a full trading halt until the following Monday.</td></tr>
+        <tr><td>InpMaxDailyLoss</td><td>2</td><td>Maximum losing trades allowed per day. After 2 losses, no new entries until next day. Aligned with prop firm standard daily loss rules.</td></tr>
+        <tr><td>InpMaxDailyWin</td><td>3</td><td>Stops taking new trades after 3 winning trades in a day — banking gains rather than overtrading a hot session.</td></tr>
+        <tr><td>InpMaxWeeklyLoss</td><td>4</td><td>Total losing trades permitted per calendar week. Prevents compounding losses across multiple consecutive bad days.</td></tr>
+        <tr><td>InpMaxDailyTrades</td><td>3</td><td>Hard cap on total trades (win + loss) per day. Overrides all other counters as an absolute maximum.</td></tr>
+        <tr><td colspan="3" style="color:var(--gold);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.12em;padding:14px 16px 6px;border-bottom:1px solid var(--border);">MULTI-TIMEFRAME SETTINGS</td></tr>
+        <tr><td>InpHTF2</td><td>PERIOD_W1</td><td>Highest timeframe for macro bias. Default: Weekly. Do not change unless testing on a higher timeframe instrument.</td></tr>
+        <tr><td>InpHTF1</td><td>PERIOD_D1</td><td>Second highest timeframe for structure and P/D array. Default: Daily.</td></tr>
+        <tr><td>InpMTF</td><td>PERIOD_H4</td><td>Intermediate timeframe for POI and mid-term structure. Default: 4-Hour.</td></tr>
+        <tr><td>InpETF</td><td>PERIOD_H1</td><td>Entry confirmation timeframe. BOS must be detected here before entry. Default: 1-Hour.</td></tr>
+        <tr><td>InpLTF</td><td>PERIOD_M15</td><td>Trigger timeframe. Liquidity sweeps, OBs, FVGs, and displacement are all detected at M15. Default: 15-Minute.</td></tr>
+        <tr><td>InpMicro</td><td>PERIOD_M5</td><td>Micro-precision timeframe. Chart attachment TF. Trailing SL uses M5 swings. Default: 5-Minute.</td></tr>
+        <tr><td colspan="3" style="color:var(--gold);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.12em;padding:14px 16px 6px;border-bottom:1px solid var(--border);">SMC / ICT FILTERS</td></tr>
+        <tr><td>InpUseBOS</td><td>true</td><td>Require Break of Structure confirmation on InpETF (H1). Disabling this allows entries without structural confirmation — not recommended.</td></tr>
+        <tr><td>InpUseLiqSweep</td><td>true</td><td>Require a confirmed liquidity sweep on InpLTF (M15) before entry. Core ICT concept — disabling is not recommended.</td></tr>
+        <tr><td>InpUseFVG</td><td>true</td><td>Require a Fair Value Gap for SL refinement. When false, SL is based purely on OB boundary.</td></tr>
+        <tr><td>InpUseOB</td><td>true</td><td>Require price to be inside an identified Order Block zone. Disabling allows entry anywhere after sweep — loses precision.</td></tr>
+        <tr><td>InpUsePDArray</td><td>true</td><td>Enforce Premium/Discount zone filter. Buys only in Discount, Sells only in Premium relative to daily equilibrium.</td></tr>
+        <tr><td>InpUseHTFBias</td><td>true</td><td>Require HTF directional bias agreement for all entries. Disabling allows counter-bias trades — not recommended for beginners.</td></tr>
+        <tr><td>InpUseMitigation</td><td>true</td><td>Reject Order Blocks that have already been mitigated (price closed through them). Essential for OB quality filtering.</td></tr>
+        <tr><td>InpOBLookback</td><td>20</td><td>Number of M15 bars to scan backward when searching for valid Order Blocks. Increase for wider lookback on calmer sessions.</td></tr>
+        <tr><td>InpFVGMinPips</td><td>5.0</td><td>Minimum FVG size in points/pips. Filters out micro-imbalances that are statistically insignificant. Increase to 8+ for XAUUSD volatile sessions.</td></tr>
+        <tr><td>InpDisplacementMult</td><td>1.8</td><td>The body of the displacement candle must be ≥ this multiple of the prior candle's body. Higher = stricter impulse requirement.</td></tr>
+        <tr><td>InpStructureLookback</td><td>30</td><td>Number of bars to scan for swing highs/lows when detecting BOS on ETF and MTF. Increase for higher timeframe swing detection.</td></tr>
+        <tr><td colspan="3" style="color:var(--gold);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.12em;padding:14px 16px 6px;border-bottom:1px solid var(--border);">TRADE MANAGEMENT</td></tr>
+        <tr><td>InpRR</td><td>2.5</td><td>Full take profit Risk:Reward ratio. TP = Entry ± (SL distance × InpRR). 2.5 is the full target. The partial TP at 1R fires before this.</td></tr>
+        <tr><td>InpPartialTPR</td><td>1.0</td><td>R-multiple at which the partial close triggers. Default 1.0 = close 50% at 1:1 R:R and move SL to breakeven.</td></tr>
+        <tr><td>InpPartialClosePC</td><td>50.0</td><td>Percentage of position closed at the partial TP. Default 50%. Remaining 50% runs as a trailing runner to 2.5R.</td></tr>
+        <tr><td>InpMoveToBreakeven</td><td>true</td><td>Move SL to entry price after partial TP fires. Makes the remaining runner completely risk-free.</td></tr>
+        <tr><td>InpUseTrailSL</td><td>true</td><td>Activate structure-based trailing stop on the runner position. Trails using M15 swing highs/lows.</td></tr>
+        <tr><td>InpTrailStart</td><td>15</td><td>Minimum profit in points before trailing SL activates. Prevents premature trail activation on small moves.</td></tr>
+        <tr><td>InpTrailStep</td><td>10</td><td>Minimum improvement in points required before SL is moved. Prevents excessive SL adjustments on micro-fluctuations.</td></tr>
+        <tr><td>InpSLBuffer</td><td>8</td><td>Points added beyond the OB boundary for the stop loss. Prevents SL being placed exactly at the OB edge which can get tagged by spread.</td></tr>
+        <tr><td>InpMaxSpread</td><td>40</td><td>Maximum spread in points for any new entry. Typical XAUUSD spread is 8–20 points during active hours.</td></tr>
+        <tr><td>InpSlippage</td><td>5</td><td>Maximum acceptable slippage in points. Uses ORDER_FILLING_FOK — if fill cannot meet this tolerance, order is rejected.</td></tr>
+        <tr><td colspan="3" style="color:var(--gold);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.12em;padding:14px 16px 6px;border-bottom:1px solid var(--border);">SESSION / KILLZONE FILTER</td></tr>
+        <tr><td>InpLondonKZ</td><td>true</td><td>Enable London Killzone entries (07:00–10:00 GMT). This is the highest-probability window for XAUUSD Asian range sweeps.</td></tr>
+        <tr><td>InpNYKZ</td><td>true</td><td>Enable New York Killzone entries (12:00–15:00 GMT). NY overlap continuation and reversal setups.</td></tr>
+        <tr><td>InpAsiaKZ</td><td>false</td><td>Enable Asia Killzone entries (00:00–03:00 GMT). Disabled by default — Asia is an accumulation session for XAUUSD, not a directional one.</td></tr>
+        <tr><td>InpGMTOffset</td><td>0</td><td>Broker server GMT offset in hours. If your broker server is GMT+2, set this to 2. Essential for correct killzone timing.</td></tr>
+        <tr><td colspan="3" style="color:var(--gold);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.12em;padding:14px 16px 6px;border-bottom:1px solid var(--border);">DISPLAY</td></tr>
+        <tr><td>InpShowDashboard</td><td>true</td><td>Enable the live on-chart information panel showing balance, equity, DD%, bias, killzone status, trade counters, and halt status. Disable for VPS headless operation.</td></tr>
+      </tbody>
+    </table>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-icon">🖥️</div>
+        <h3 class="s">VPS Deployment</h3>
+        <p>Run on a VPS co-located near your broker's server. Target latency under 10ms. Minimum 2GB RAM. Keep MT5 on the latest stable build. Set <strong>InpShowDashboard = false</strong> to reduce CPU usage in headless mode. Recommended providers: Vultr, Contabo, or broker-provided VPS.</p>
+      </div>
+      <div class="card gold-card">
+        <div class="card-icon">🔬</div>
+        <h3 class="g">Backtesting</h3>
+        <p>Use MT5 Strategy Tester in <strong>"Every tick based on real ticks"</strong> mode. Download at least 6 months of M5 XAUUSD data before testing. Forward test on a demo account for minimum 4 weeks before any live deployment. Verify InpGMTOffset matches your broker in the tester settings.</p>
+      </div>
+      <div class="card plat-card">
+        <div class="card-icon">✅</div>
+        <h3 class="pl">Live Deployment Checklist</h3>
+        <p>✓ Attach to XAUUSD M5 chart &nbsp;✓ Auto Trading button is green &nbsp;✓ Allow Live Trading is checked in EA settings &nbsp;✓ InpGMTOffset verified for your broker &nbsp;✓ InpAccountCapital set to your actual capital &nbsp;✓ InpRiskPercent confirmed &nbsp;✓ Spread is normal (&lt;20pts) at London Open</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<hr class="divider"/>
+
+<!-- DISCLAIMER -->
+<section style="padding: 60px 24px;">
+  <div class="reveal" style="background:var(--card);border:1px solid var(--border);border-left:3px solid var(--red);border-radius:0 3px 3px 0;padding:32px;max-width:840px;margin:0 auto;">
+    <div class="section-label" style="margin-bottom:12px; color: var(--red);">⚠️ Risk Disclaimer</div>
+    <p style="font-size:13px;color:var(--muted);line-height:1.95;font-weight:400;">
+      The SMC ICT Elite HFT v2 Expert Advisor is provided for educational and personal research purposes. All automated trading carries significant financial risk. Past performance in backtesting or simulation does not guarantee future live trading results. Markets can and do behave in ways that no algorithm can fully predict or protect against. Always test thoroughly on a <strong style="color:var(--text)">demo account for a minimum of 4–8 weeks</strong> before deploying on any live account. XAUUSD and CFD trading involves leverage which can result in losses exceeding your initial deposit. Only ever trade with capital you can genuinely afford to lose. The creator assumes no liability for any financial losses incurred through the use of this software. Automated trading is not suitable for all investors.
+    </p>
+  </div>
+</section>
+
+<footer>
+  <span>SMC · ICT · ELITE · HFT · v2</span> &nbsp;·&nbsp; Multi-Timeframe Confluence Engine &nbsp;·&nbsp; MetaTrader 5 &nbsp;·&nbsp; v2.0.0
+  <br/><br/>
+  Built on Smart Money Concepts · ICT Methodology · Institutional Order Flow · XAUUSD Primary
+</footer>
+
+<script>
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if(e.isIntersecting) {
+        e.target.classList.add('visible');
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.06 });
+  reveals.forEach(r => observer.observe(r));
+
+  // Step toggle (expand/collapse)
+  function toggleStep(el) {
+    const detail = el.querySelector('.step-detail');
+    const hint   = el.querySelector('.hint');
+    if(!detail) return;
+    detail.classList.toggle('open');
+    if(hint) hint.textContent = detail.classList.contains('open') ? '↑ Click to collapse' : '↓ Click to expand';
+  }
+
+  // Active nav highlight on scroll
+  const sections  = document.querySelectorAll('section[id]');
+  const navLinks  = document.querySelectorAll('.nav-links a');
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(s => {
+      if(window.scrollY >= s.offsetTop - 150) current = s.id;
+    });
+    navLinks.forEach(a => {
+      a.style.color = a.getAttribute('href') === '#' + current ? 'var(--gold)' : '';
+    });
+  });
+</script>
+</body>
+</html>
