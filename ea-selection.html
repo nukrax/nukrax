@@ -419,7 +419,7 @@ const closeBtn=document.getElementById('modal-close');
 
 document.querySelectorAll('.card-btn').forEach(btn=>{
   btn.addEventListener('click',()=>{
-    const file='ea-files/'+btn.dataset.file;
+    const file=btn.dataset.file;
     iframe.src=file;
     overlay.classList.add('active');
     document.body.style.overflow='hidden';
