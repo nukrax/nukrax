@@ -148,6 +148,37 @@ body::after{
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   NAVIGATION
+═══════════════════════════════════════════════════════════════ */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:1000;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px 52px;
+  background:rgba(6,6,8,0.9);backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(42,42,53,0.5);
+}
+.nav-logo{
+  font-family:var(--font-head);font-size:22px;font-weight:800;
+  letter-spacing:0.22em;color:var(--white);
+  text-decoration:none;
+}
+.nav-back{
+  display:flex;align-items:center;gap:8px;
+  font-family:var(--font-mono);font-size:10px;font-weight:500;
+  letter-spacing:0.18em;text-transform:uppercase;
+  color:var(--muted);text-decoration:none;
+  transition:color .25s;cursor:none;
+}
+.nav-back:hover{color:var(--blue2)}
+.nav-back-arrow{transition:transform .3s var(--ease-out)}
+.nav-back:hover .nav-back-arrow{transform:translateX(-4px)}
+@media(max-width:768px){
+  nav{padding:16px 24px}
+  .nav-logo{font-size:18px}
+  .nav-back{font-size:9px}
+}
+
+/* ═══════════════════════════════════════════════════════════════
    LAYOUT
 ═══════════════════════════════════════════════════════════════ */
 #app{
@@ -1375,6 +1406,15 @@ label{font-size:10px;color:var(--muted);font-weight:500;letter-spacing:.06em;tex
 </style>
 </head>
 <body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">NUKRAX</a>
+  <a href="index.html" class="nav-back">
+    <span class="nav-back-arrow">←</span>
+    Back to Hub
+  </a>
+</nav>
 
 <!-- CUSTOM CURSOR -->
 <div class="cursor-dot" id="cursorDot"></div>
